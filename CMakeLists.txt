@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lidar2rosbag)
+project(kitti2rosbag)
 
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
 
@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   rosbag_storage
+  cv_bridge
+  image_transport
   )
 
 find_package(Eigen3 REQUIRED)
@@ -31,8 +33,8 @@ catkin_package(
  
 )
 
-add_executable(lidar2rosbag src/lidar2rosbag.cpp)
-target_link_libraries(lidar2rosbag ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
+add_executable(kitti2rosbag src/kitti2rosbag.cpp)
+target_link_libraries(kitti2rosbag ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 
 

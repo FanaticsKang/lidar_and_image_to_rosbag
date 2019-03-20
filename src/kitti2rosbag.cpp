@@ -33,13 +33,21 @@
 #include <rosbag/bag.h>
 
 #include <opencv2/highgui/highgui.hpp>
+#include<sensor_msgs/Image.h>
+#include <std_msgs/Time.h>
+#include <std_msgs/Header.h>
+#include <opencv2/core/core.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
-ros::Publisher pubLaserCloud;
+ros::Publisher laser_pub;
+ros::Publisher image_pub;
 std::vector<std::string> file_lists;
+std::vector<std::string> image_lists;
 std::vector<double> times_lists;
 
 using namespace pcl;
@@ -81,108 +89,26 @@ void sort_filelists(std::vector<std::string>& filists,std::string type)
     std::sort(filists.begin(),filists.end(),computePairNum);
 }
 
-void Benchmark2TUM(const string &num)
-{
-    cout << endl << "Reading KITTI benchmark from " << num << " ..." << endl;
-
-    ifstream f;
-    std::string in_path = "/data/Test/poses/00.txt";
-    f.open(num.c_str());
-
-    ifstream ft;
-    std::string times_path = "/data/KITTI/dataset/sequences/"+num + "/times.txt";
-    ft.open(num.c_str());
-
-    ofstream fo;
-    std::string out_path = "/data/Test/posesTUM/" +num + ".txt";
-    fo.open(out_path.c_str());
-
-        std::cout<<"in: "<<in_path<<"\ntime:  "<< times_path <<"\nout:"<<out_path<<std::endl;
-
-    std::vector<double> t_lists;
-    if(ft.is_open())
-    {
-        double time = 0.0f;
-        while(!ft.eof() )
-        {
-            
-            ft >>setprecision(12)>> time;
-            t_lists.push_back(time);
-        }
-    }
-    else{
-        printf("no times file\n");
-    }
-    ft.close();
-     
-    if(f.is_open()  )
-    {
-        int i=0;
-    	while(!f.eof())
-    	{
-    		string s;
-    		getline(f,s);
-    		if(!s.empty())
-    		{
-    			stringstream ss;
-    			ss << s;
-    			Eigen::Matrix<double,4,4> TwI;
-    			double a,b,c,d,  e,f,g,h,   i,j,k,l;
-    			ss>>a;  ss>>b;  ss>>c;  ss>>d;
-    			ss>>e;  ss>>f;  ss>>g;  ss>>h;
-    			ss>>i;  ss>>j;  ss>>k;  ss>>l;
-    			TwI << a, b, c, d,
-    				   e, f, g, h,
-    				   i, j, k, l,
-    				   0.,0.,0.,1.;
-    			Eigen::Quaterniond q(TwI.block<3,3>(0,0));
-    	        Eigen::Vector3d t = TwI.block<3,1>(0,3);
-
-                fo << setprecision(12) << t_lists[i]  << " " << t(0) << " " << t(1) << " " << t(2)
-                     << " " << q.x()<< " " << q.y() << " " << q.z() << " " << q.w() << endl;
-    		}
-            i++;
-    	}
-
-
-    	f.close();	
-    }
-    else
-    	printf("ERROR: can not find the benchmark file!\n");
-
-}
-
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "lidar2rosbag");
+  ros::init(argc, argv, "kitti2rosbag");
   ros::NodeHandle nh;
-
-  //temp:process benchmark
-//   for(int i=0;i<=10;i++)
-//   {
-//     std::string _num ;
-//     if(i<10)
-//         _num= "0" + std::to_string(i);
-//     else
-//         _num="10";
-//     Benchmark2TUM(_num); // useless, have to pass full name
-//     printf("process  %d, \n", i);
-//   }
 
   if(argc<3)
   {
-      printf("ERROR: Please follow the example: rosrun pkg node input num_output:\n  rosrun lidar2rosbag lidar2rosbag /data/KITTI/dataset/sequences/04/ 04 \n");
+      printf("ERROR: Please follow the example: rosrun pkg node input num_output:\n  rosrun kitti2rosbag kitti2rosbag /data/KITTI/dataset/sequences/04/ 04 \n");
       return -2;
 
   }
      
 
-  pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_pub", 2);
-
+  laser_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_pub", 2);
+  image_pub = nh.advertise<sensor_msgs::Image>("/image_pub", 2);
  
     std::string input_dir = argv[1];
     std::string output_dir = argv[2];
     std::string bin_path = input_dir + "velodyne/" ;//"/data/KITTI/dataset/sequences/04/velodyne/";
+    std::string image_path = input_dir + "image_0/" ;
     std::string times_path = input_dir + "times.txt";
 
     //load times
@@ -202,10 +128,19 @@ int main(int argc, char **argv) {
 
     read_filelists( bin_path, file_lists, "bin" );
     sort_filelists( file_lists, "bin" );
-    
+
+    read_filelists( image_path, image_lists, "png" );
+    sort_filelists( image_lists, "png" );
+
+
     for(int i =0;i<file_lists.size();i++)
     {
         std::cout << file_lists[i]<<std::endl;
+    }
+
+    for(int i =0;i<image_lists.size();i++)
+    {
+        std::cout << image_lists[i]<<std::endl;
     }
 
     for(int i =0;i<times_lists.size();i++)
@@ -221,12 +156,16 @@ int main(int argc, char **argv) {
     //load point cloud
     for(int iter=0;iter<file_lists.size();iter++)
     {
+	 
+	
         std::string infile = bin_path + file_lists[iter];
         ifstream input(infile.c_str(), ios::in | ios::binary);
         if(!input.is_open() ){
             cerr << "Could not read file: " << infile << endl;
             return -1;
         }
+
+
         // pcl::PointCloud<PointXYZI>::Ptr points (new pcl::PointCloud<PointXYZI>);
         pcl::PointCloud<pcl::PointXYZI> points;
         const size_t kMaxNumberOfPoints = 1e6;  // From Readme for raw files.
@@ -244,42 +183,45 @@ int main(int argc, char **argv) {
         input.close();
 
         ros::Time timestamp_ros(times_lists[iter]==0?  ros::TIME_MIN.toSec()  :times_lists[iter]);
-       // timestampToRos(times_lists[iter], &timestamp_ros);
 
         points.header.stamp = times_lists[iter] ;
         points.header.frame_id = "velodyne";
 
         sensor_msgs::PointCloud2 output;
+
         pcl::toROSMsg(points, output);
+
         output.header.stamp = timestamp_ros  ;
-        output.header.frame_id = "velodyne";
+        output.header.frame_id = "lidar_points"; //rostopic name of lidar
         
-        pubLaserCloud.publish(output);
-        std::cout<<"ros time : "<< output.header.stamp.toSec() <<"  with  "<<timestamp_ros.toSec()<<endl;
+
+        cv::Mat image = cv::imread( image_path + image_lists[iter], cv::IMREAD_GRAYSCALE);
+
+        uint seq = 0;
+        cv_bridge::CvImage ros_image;
+        ros_image.image = image;
+        ros_image.encoding = "mono8";
+        sensor_msgs::ImagePtr ros_image_msg;
+        ros_image_msg = ros_image.toImageMsg();
+        ros_image_msg->header.seq = seq;
+        ros_image_msg->header.stamp = timestamp_ros;
+        ros_image_msg->header.frame_id = "image_converter/cam1";//the rostopic name of image 
+
+// pub by rostopic
+//        laser_pub.publish(output);
+//        image_pub.publish(ros_image_msg);
+//        ros::spinOnce();
+
+
+
+// write to ros bag
         bag.write("velodyne_points", timestamp_ros, output);
+        bag.write("image", timestamp_ros, ros_image_msg);
+        std::cout<<"ros time : "<< output.header.stamp.toSec() <<"  with  "<<timestamp_ros.toSec()<<endl;
 
     }
 
-    printf("lidar 2 kitti rosbag done\n");
-
-
-//  ros::Publisher pubBag = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points", 2);
-//   rosbag::Bag bag;
-//   bag.open("/data/KITTI/velodyne/04.bag", rosbag::bagmode::Read);
-
-// //load lidar rosbag
-//   for(rosbag::MessageInstance const m: rosbag::View(bag))
-//   {
-//     auto begin_time = std::chrono::system_clock::now();
-//     sensor_msgs::PointCloud2::ConstPtr i = m.instantiate<sensor_msgs::PointCloud2>();
-//      if (i != NULL)
-//        pubBag.publish( *i );
-//     sleep(1);
-//   }
-
-//   bag.close();
-
-  //ros::spin();
+    printf("kitti 2 ros done\n");
 
   return 0;
 }

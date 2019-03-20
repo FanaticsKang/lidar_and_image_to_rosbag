@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 <package>
-  <name>lidar2rosbag</name>
+  <name>kitti2rosbag</name>
   <version>0.0.0</version>
 
   <description>
-    This is a ROS implementation for lidar data from KITTI to rosbag  
+    This is a ROS implementation for data from KITTI to rosbag  
 
   </description>
-  <maintainer email="evenator@swri.org">Ed Venator</maintainer>
+  <maintainer email="Teng@todo.todo">Teng</maintainer>
 
   <license>BSD</license>
 
-  <author email="chenshenzhou@163.com">Abner</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>image_transport</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -23,7 +24,10 @@
   <build_depend>tf</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>rosbag_storage</build_depend>
-  
+
+
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>image_transport</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
@@ -33,6 +37,8 @@
   <run_depend>tf</run_depend>
   <run_depend>boost</run_depend>
   <run_depend>rosbag_storage</run_depend>
+
+
 
   <test_depend>rostest</test_depend>
   <test_depend>rosbag</test_depend>
