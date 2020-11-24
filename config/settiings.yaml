@@ -1,0 +1,17 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Extract Odometry Data
+#--------------------------------------------------------------------------------------------
+Odom.Rosbag: "/home/kang/data/test/rosbag_mmradarPointcloud_drodometry.bag"
+
+Odom.Topic: "/zros_dbg_node/dr_odometry"
+Odom.OutputPath: "/home/kang/data/test/odom.txt"
+
+#--------------------------------------------------------------------------------------------
+# Extract Image Data
+#--------------------------------------------------------------------------------------------
+Image.Rosbag: "/home/kang/data/test/rosbag_mmradarPointcloud_drodometry.bag"
+
+Image.Topic: "/zros_dbg_node/dr_odometry"
+Image.OutputFold: "/home/kang/data/test/image/"

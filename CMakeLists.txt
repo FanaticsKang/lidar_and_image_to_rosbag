@@ -36,6 +36,8 @@ catkin_package(
 add_executable(kitti2rosbag src/kitti2rosbag.cpp)
 target_link_libraries(kitti2rosbag ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(read_rosbag_image src/read_rosbag_image.cc)
+target_link_libraries(read_rosbag_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-
-
+add_executable(read_rosbag_odometry src/read_rosbag_odometry.cc)
+target_link_libraries(read_rosbag_odometry ${catkin_LIBRARIES} ${OpenCV_LIBS})
