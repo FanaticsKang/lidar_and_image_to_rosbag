@@ -29,8 +29,6 @@ include_directories(
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs rosbag_storage
   DEPENDS EIGEN3 PCL OpenCV
-  
- 
 )
 
 add_executable(kitti2rosbag src/kitti2rosbag.cpp)
@@ -41,3 +39,6 @@ target_link_libraries(read_rosbag_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(read_rosbag_odometry src/read_rosbag_odometry.cc)
 target_link_libraries(read_rosbag_odometry ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(fisheye_fov_undistort src/fisheye_fov.cc)
+target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})

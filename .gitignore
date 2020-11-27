@@ -17,3 +17,4 @@ Makefile
 *.VC.db
 *.VC.opendb
 *.suo
+config/distort_table.txt

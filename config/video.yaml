@@ -1,0 +1,43 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Input parameters
+#--------------------------------------------------------------------------------------------
+
+# Input path and file names
+# Note: If you comment the lines, the corresponding images will not be output
+Input.path:       "/home/kang/data/test/front.avi"
+Input.timestamps: "video_frame_info"
+
+#--------------------------------------------------------------------------------------------
+# Output parameters
+#--------------------------------------------------------------------------------------------
+
+# Output directories
+# Note: If you comment the lines, the corresponding images will not be output
+Output.path:  "/home/kang/data/test/"
+
+#--------------------------------------------------------------------------------------------
+# Fisheye camera parameters
+#--------------------------------------------------------------------------------------------
+
+Fisheye.pixel_size: 0.003  # unit: mm
+Fisheye.distortion_file:  "/home/kang/project/extract_rosbag/src/lidar_and_image_to_rosbag/config/distort_table.txt"
+
+Fisheye.fx:               302.0
+Fisheye.fy:               302.0
+Fisheye.cx:               640
+Fisheye.cy:               360
+Fisheye.width:            1280
+Fisheye.height:           720
+
+#--------------------------------------------------------------------------------------------
+# Pinhole camera parameters
+#--------------------------------------------------------------------------------------------
+
+Pinhole.fx:       220.6
+Pinhole.fy:       220.6
+Pinhole.cx:       320.0
+Pinhole.cy:       350.0
+Pinhole.width:    640
+Pinhole.height:   480
