@@ -42,3 +42,6 @@ target_link_libraries(read_rosbag_odometry ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(fisheye_fov_undistort src/fisheye_fov.cc)
 target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(read_wheel_pulse src/read_wheel_pulse.cc)
+target_link_libraries(read_wheel_pulse ${catkin_LIBRARIES})
