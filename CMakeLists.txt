@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(kitti2rosbag)
 
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
@@ -19,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(Glog REQUIRED)
 
 include_directories(
   include
@@ -43,5 +45,9 @@ target_link_libraries(read_rosbag_odometry ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(fisheye_fov_undistort src/fisheye_fov.cc)
 target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-add_executable(read_wheel_pulse src/read_wheel_pulse.cc)
-target_link_libraries(read_wheel_pulse ${catkin_LIBRARIES})
+add_executable(read_wheel_pulse src/read_wheel_pulse.cc
+                                src/vehicle.cc)
+
+target_link_libraries(read_wheel_pulse ${catkin_LIBRARIES}
+                                         ${OpenCV_LIBS}
+                                         glog)

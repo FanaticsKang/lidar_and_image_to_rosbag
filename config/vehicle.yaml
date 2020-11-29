@@ -1,0 +1,14 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Input parameters
+#--------------------------------------------------------------------------------------------
+
+Car.WHEEL_R: 0.365
+Car.B_PPR: 96
+Car.WHEEL_BASE: 1.585
+
+File.Wheel_Pulse: "/home/kang/data/1126/capture/live_msg.vehicle_info_Vehicle_Speed_Pulse"
+File.Gear: "/home/kang/data/1126/capture/live_msg.vehicle_info_Vehicle_Gear"
+
+File.OutputPath: "/home/kang/data/1126/capture/odom.txt"

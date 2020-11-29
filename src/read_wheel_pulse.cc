@@ -8,55 +8,8 @@
 #include <iostream>
 #include <vector>
 
-class SpeedPulse {
- private:
-  unsigned int id;
-  unsigned int size;
-  unsigned long long timestamp;
-  char data[0];
-
- public:
-  unsigned short left_front;
-  unsigned short right_front;
-  unsigned short left_rear;
-  unsigned short right_rear;
-
- public:
-  friend std::ostream& operator<<(std::ostream& os, const SpeedPulse& sp) {
-    os << "Timestamp: " << sp.timestamp << ", [" << sp.left_front << ", "
-       << sp.right_front << ", " << sp.right_front << ", " << sp.right_rear
-       << "]";
-    return os;
-  }
-  double TimestampSec() const { return timestamp * 1e-6; }
-};
-
-struct Robot2DState {
-  double timestamp;
-  float x;
-  float y;
-  float yaw;
-};
-
-std::vector<SpeedPulse> LoadSpeedPulse(const std::string& file_name) {
-  std::ifstream infile(file_name, std::ios::in | std::ios::binary);
-  if (infile.fail()) {
-    return std::vector<SpeedPulse>();
-  }
-
-  SpeedPulse tmp_data;
-  std::vector<SpeedPulse> all_wheel_speed;
-  all_wheel_speed.reserve(10000);
-  while (!infile.eof()) {
-    infile.read((char*)&tmp_data, sizeof(tmp_data));
-    all_wheel_speed.emplace_back(tmp_data);
-  }
-  std::cout << "File data size: " << all_wheel_speed.size() << std::endl;
-
-  infile.close();
-
-  return all_wheel_speed;
-}
+#include <opencv2/core/core.hpp>
+#include "vehicle.h"
 
 nav_msgs::Odometry TransformToRosMsg(const double timestamp,
                                      const Eigen::Vector3d& translation,
@@ -78,89 +31,45 @@ int main(int argc, char** argv) {
     std::cout << "Error" << std::endl;
     return -1;
   }
+  Vehicle m_vehicle(argv[1]);
+  cv::FileStorage settings(argv[1], cv::FileStorage::READ);
+  std::string wheel_pulse_file;
+  std::string gear_file;
+  std::string output_file;
+  settings["File.Wheel_Pulse"] >> wheel_pulse_file;
+  settings["File.Gear"] >> gear_file;
+  settings["File.OutputPath"] >> output_file;
+
+  m_vehicle.LoadWheelPulse(wheel_pulse_file);
+  m_vehicle.LoadGear(gear_file);
+
+  if (!m_vehicle.DeadReckonAll()) {
+    std::cout << "Dead Reckon Failed." << std::endl;
+    return -1;
+  }
+
+  m_vehicle.SaveOdometryAsTum(output_file);
+  std::vector<Robot2DState>& all_pose = m_vehicle.all_pose_;
+  std::cout << "Finished dead reckon, playback data in ROS." << std::endl;
+  settings.release();
+
   ros::init(argc, argv, "ReadWheelPulse");
   ros::NodeHandle nh;
-
-  auto pose_pub_ = nh.advertise<nav_msgs::Odometry>("/DR/Pose", 5);
-
-  std::vector<SpeedPulse> all_wheel_speed = LoadSpeedPulse(argv[1]);
-
-  double prev_time = all_wheel_speed[0].TimestampSec();
-
-  for (auto iter = all_wheel_speed.begin() + 1,
-            pre_iter = all_wheel_speed.begin();
-       iter != all_wheel_speed.end();) {
-    if (iter->TimestampSec() <= prev_time) {
-      // std::cout << "Current " << *iter << "\nPrevious " << *pre_iter
-      //           << std::endl;
-      iter = all_wheel_speed.erase(iter);
-      continue;
-    }
-    prev_time = iter->TimestampSec();
-    pre_iter = iter;
-    ++iter;
-  }
-  std::cout << "Available data size: " << all_wheel_speed.size() << std::endl;
-
-  double pre_distance_ = 0.f;
-  double pre_rotation_ = 0.f;
-  SpeedPulse pre_dws_raw_ = all_wheel_speed[0];
-  Robot2DState pre_dr_state_ = {pre_dws_raw_.TimestampSec(), 0.f, 0.f, 0.f};
-  Robot2DState cur_dr_state_ = pre_dr_state_;
-  double wheel_radius = 0.365;
-  double pulse_per_ring = 96;
-  // TODO NAME
-  double back_track = 1.585;
+  auto pose_pub_ = nh.advertise<nav_msgs::Odometry>("/Dead_Reckon", 5);
 
   ros::Rate loop_rate(100);
-  for (auto iter = all_wheel_speed.begin() + 1,
-            pre_iter = all_wheel_speed.begin();
-       iter != all_wheel_speed.end(); ++iter, ++pre_iter) {
-    if (fabs(iter->TimestampSec() - pre_iter->TimestampSec()) <= 1e-6) {
-      return -1;
-    }
+
+  for (auto& iter : all_pose) {
     if (!ros::ok()) {
-      return -1;
+      break;
     }
-    // TODO Get Gear
-    float gear_flag = 1.f;
-
-    const float left_dis = gear_flag * (iter->left_rear - pre_iter->left_rear) *
-                           wheel_radius * M_PI * 2 / pulse_per_ring;
-    const float right_dis = gear_flag *
-                            (iter->right_rear - pre_iter->right_rear) *
-                            wheel_radius * M_PI * 2 / pulse_per_ring;
-    // std::cout << "left dis " << left_dis << std::endl;
-
-    float distance = (left_dis + right_dis) * 0.5f;
-    float rotation = -1 * (left_dis - right_dis) / back_track;
-
-    // std::cout << "distance " << distance << ", rotation " << rotation
-    //           << std::endl;
-    // low pass filter on velocity
-    distance = 0.2f * pre_distance_ + 0.8f * distance;
-    rotation = 0.2f * pre_rotation_ + 0.8f * rotation;
-
-    // std::cout << cur_dr_state_.x << ", " << cur_dr_state_.y << std::endl;
-
-    // prediction by motion model
-    pre_dr_state_ = cur_dr_state_;
-    cur_dr_state_.x += distance * cos(pre_dr_state_.yaw + rotation * 0.5f);
-    cur_dr_state_.y += distance * sin(pre_dr_state_.yaw + rotation * 0.5f);
-    cur_dr_state_.yaw += rotation;
-    cur_dr_state_.timestamp = iter->TimestampSec();
-
-    pre_distance_ = distance;
-    pre_rotation_ = rotation;
-    std::cout << cur_dr_state_.x << ", " << cur_dr_state_.y << ", "
-              << cur_dr_state_.yaw << std::endl;
-    // pre_dws_raw_ = cur_dws_raw;
     Eigen::Quaterniond dr_q;
-    dr_q = Eigen::AngleAxisd(cur_dr_state_.yaw, Eigen::Vector3d::UnitZ());
+    dr_q = Eigen::AngleAxisd(iter.yaw, Eigen::Vector3d::UnitZ());
 
-    Eigen::Vector3d dr_t(cur_dr_state_.x, cur_dr_state_.y, 0);
+    Eigen::Vector3d dr_t(iter.x, iter.y, 0);
+    std::cout << "\rCurrent " << iter << "        " << std::flush;
     nav_msgs::Odometry odometry_msg_ =
-        TransformToRosMsg(cur_dr_state_.timestamp, dr_t, dr_q);
+        TransformToRosMsg(iter.timestamp, dr_t, dr_q);
     odometry_msg_.header.frame_id = "map";
     odometry_msg_.child_frame_id = "robot";
     pose_pub_.publish(odometry_msg_);
@@ -168,4 +77,8 @@ int main(int argc, char** argv) {
     ros::spinOnce();
     loop_rate.sleep();
   }
+  std::cout << std::endl;
+
+  ros::shutdown();
+  return 0;
 }
