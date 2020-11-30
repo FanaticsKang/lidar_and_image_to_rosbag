@@ -90,6 +90,7 @@ FisheyeUndistorter::FisheyeUndistorter(const std::string &setting_file) {
   cv::FileStorage configs(setting_file, cv::FileStorage::READ);
 
   input_path_ = static_cast<std::string>(configs["Input.path"]);
+  timestamp_path_ = static_cast<std::string>(configs["Input.timestamp"]);
   output_path_ = static_cast<std::string>(configs["Output.path"]);
 
   cv::Mat K_fisheye = cv::Mat::eye(3, 3, CV_32F);
@@ -136,9 +137,44 @@ FisheyeUndistorter::FisheyeUndistorter(const std::string &setting_file) {
                     pinhole_height);
 }
 
+bool FisheyeUndistorter::ExtractTimestamp() {
+  std::ifstream infile(timestamp_path_, std::ios::in | std::ios::binary);
+  if (infile.fail()) {
+    return false;
+  }
+
+  std::ofstream outfile(Directory::AddEnding(output_path_, "/") +
+                        "timestamp.txt");
+
+  unsigned int flag = 0;
+  unsigned long long index = 0;
+  unsigned long long time = 0;
+
+  std::vector<double> all_timestamp;
+  while (!infile.eof()) {
+    infile.read((char *)&flag, sizeof(flag));
+    infile.read((char *)&index, sizeof(index));
+    infile.read((char *)&time, sizeof(time));
+    if (flag == 1) {
+      const double tmp = time * 1e-6;
+      all_timestamp.emplace_back(tmp);
+      outfile << tmp << std::endl;
+    }
+  }
+  infile.close();
+  outfile.close();
+
+  const size_t timestamp_size = all_timestamp.size();
+  std::cout << "Timestamp size: " << timestamp_size << ", from "
+            << all_timestamp[0] << " to " << all_timestamp[timestamp_size - 1]
+            << std::endl;
+
+  return true;
+}
+
 int main(int argv, char **argc) {
   if (argv < 2) {
-    std::cerr << "Use fish_fov_undistort /path/to/setting/yaml" << std::endl;
+    std::cerr << "Use fish_fov_undistort /path/to/video/yaml" << std::endl;
     return -1;
   }
   cv::Mat image;
@@ -159,6 +195,7 @@ int main(int argv, char **argc) {
     std::cout << "Output directories created." << std::endl;
   }
 
+  undistorter.ExtractTimestamp();
   int i = 0;
   while (capture.read(image)) {
     cv::Mat undistort_image = undistorter.Undistort(image);
@@ -175,7 +212,8 @@ int main(int argv, char **argc) {
     cv::imshow("Undistory", undistort_image);
     cv::waitKey(1);
   }
+  std::cout << std::endl << "Image size: " << ++i << std::endl;
 
-  std::cout << "\nFINISH." << std::endl;
+  std::cout << "FINISH." << std::endl;
   return 1;
 }

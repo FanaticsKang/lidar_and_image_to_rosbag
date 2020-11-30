@@ -28,7 +28,7 @@ nav_msgs::Odometry TransformToRosMsg(const double timestamp,
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    std::cout << "Error" << std::endl;
+    std::cerr << "Use read_wheel_pulse /path/to/vehicle/yaml" << std::endl;
     return -1;
   }
   Vehicle m_vehicle(argv[1]);

@@ -8,7 +8,7 @@
 #include <fstream>
 
 void SaveOdometryAsTum(const std::vector<nav_msgs::Odometry>& all_odom,
-                     const std::string& file_name) {
+                       const std::string& file_name) {
   std::ofstream f;
   f.open(file_name.c_str());
   f << std::fixed;
@@ -27,7 +27,9 @@ void SaveOdometryAsTum(const std::vector<nav_msgs::Odometry>& all_odom,
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    std::cout << "\03[031mError! You need path to setting file." << std::endl;
+    std::cerr << "Use\033[031m"
+              << " read_rosbag_odometry /path/to/settings/yaml\033[0m"
+              << std::endl;
     return -1;
   }
   cv::FileStorage fsSettings(argv[1], cv::FileStorage::READ);

@@ -11,6 +11,8 @@ class FisheyeUndistorter : public Fisheye {
   // undistort a BGR or gray image
   cv::Mat Undistort(const cv::Mat& fisheye_img) const;
 
+  bool ExtractTimestamp();
+
  private:
   void Initization(const std::vector<float>& fisheye_distortion_table,
                    const float fisheye_pixel_size, const cv::Mat& K_fisheye,
@@ -21,6 +23,7 @@ class FisheyeUndistorter : public Fisheye {
 
 public:
   std::string input_path_;
+  std::string timestamp_path_;
   std::string output_path_;
 
  private:

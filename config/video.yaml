@@ -6,8 +6,8 @@
 
 # Input path and file names
 # Note: If you comment the lines, the corresponding images will not be output
-Input.path:       "/home/kang/data/test/front.avi"
-Input.timestamps: "video_frame_info"
+Input.path:       "/home/kang/data/1126/capture/front.avi"
+Input.timestamp: "/home/kang/data/1126/capture/video_frame_info"
 
 #--------------------------------------------------------------------------------------------
 # Output parameters
@@ -15,14 +15,14 @@ Input.timestamps: "video_frame_info"
 
 # Output directories
 # Note: If you comment the lines, the corresponding images will not be output
-Output.path:  "/home/kang/data/test/"
+Output.path:  "/home/kang/data/1126/capture/"
 
 #--------------------------------------------------------------------------------------------
 # Fisheye camera parameters
 #--------------------------------------------------------------------------------------------
 
 Fisheye.pixel_size: 0.003  # unit: mm
-Fisheye.distortion_file:  "/home/kang/project/extract_rosbag/src/lidar_and_image_to_rosbag/config/distort_table.txt"
+Fisheye.distortion_file:  "/home/kang/data/1126/distort_table.txt"
 
 Fisheye.fx:               302.0
 Fisheye.fy:               302.0
