@@ -172,48 +172,73 @@ bool FisheyeUndistorter::ExtractTimestamp() {
   return true;
 }
 
-int main(int argv, char **argc) {
-  if (argv < 2) {
-    std::cerr << "Use fish_fov_undistort /path/to/video/yaml" << std::endl;
-    return -1;
+bool FisheyeUndistorter::ExtractTimestamp(std::vector<double>* all_time_ptr) {
+  std::ifstream infile(timestamp_path_, std::ios::in | std::ios::binary);
+  if (infile.fail() || all_time_ptr == nullptr) {
+    return false;
   }
-  cv::Mat image;
+  all_time_ptr->clear();
 
-  FisheyeUndistorter undistorter(argc[1]);
-  cv::VideoCapture capture(undistorter.input_path_);
+  unsigned int flag = 0;
+  unsigned long long index = 0;
+  unsigned long long time = 0;
 
-  const std::string &ouput_path =
-      Directory::AddEnding(undistorter.output_path_, "/") + "image/";
-
-  std::cout << "Input: " << undistorter.input_path_ << std::endl;
-  std::cout << "Output: " << ouput_path << std::endl;
-
-  const std::string command_create = "mkdir -p " + ouput_path;
-  const int is_create = system(command_create.c_str());
-
-  if (is_create != 0) {
-    std::cout << "Output directories created." << std::endl;
+  while (!infile.eof()) {
+    infile.read((char *)&flag, sizeof(flag));
+    infile.read((char *)&index, sizeof(index));
+    infile.read((char *)&time, sizeof(time));
+    if (flag == 1) {
+      const double tmp = time * 1e-6;
+      all_time_ptr->emplace_back(tmp);
+    }
   }
+  infile.close();
 
-  undistorter.ExtractTimestamp();
-  int i = 0;
-  while (capture.read(image)) {
-    cv::Mat undistort_image = undistorter.Undistort(image);
-    // cv::imshow("/Original", image);
-
-    std::stringstream out_file_name;
-    out_file_name << ouput_path;
-    out_file_name << std::setfill('0') << std::setw(6) << i++;
-    out_file_name << ".png";
-
-    cv::imwrite(out_file_name.str(), undistort_image);
-    std::cout << "\rWrite image: " << out_file_name.str() << std::flush;
-
-    cv::imshow("Undistory", undistort_image);
-    cv::waitKey(1);
-  }
-  std::cout << std::endl << "Image size: " << ++i << std::endl;
-
-  std::cout << "FINISH." << std::endl;
-  return 1;
+  return true;
 }
+
+// int main(int argv, char **argc) {
+//   if (argv < 2) {
+//     std::cerr << "Use fish_fov_undistort /path/to/video/yaml" << std::endl;
+//     return -1;
+//   }
+//   cv::Mat image;
+
+//   FisheyeUndistorter undistorter(argc[1]);
+//   cv::VideoCapture capture(undistorter.input_path_);
+
+//   const std::string &ouput_path =
+//       Directory::AddEnding(undistorter.output_path_, "/") + "image/";
+
+//   std::cout << "Input: " << undistorter.input_path_ << std::endl;
+//   std::cout << "Output: " << ouput_path << std::endl;
+
+//   const std::string command_create = "mkdir -p " + ouput_path;
+//   const int is_create = system(command_create.c_str());
+
+//   if (is_create != 0) {
+//     std::cout << "Output directories created." << std::endl;
+//   }
+
+//   undistorter.ExtractTimestamp();
+//   int i = 0;
+//   while (capture.read(image)) {
+//     cv::Mat undistort_image = undistorter.Undistort(image);
+//     // cv::imshow("/Original", image);
+
+//     std::stringstream out_file_name;
+//     out_file_name << ouput_path;
+//     out_file_name << std::setfill('0') << std::setw(6) << i++;
+//     out_file_name << ".png";
+
+//     cv::imwrite(out_file_name.str(), undistort_image);
+//     std::cout << "\rWrite image: " << out_file_name.str() << std::flush;
+
+//     cv::imshow("Undistory", undistort_image);
+//     cv::waitKey(1);
+//   }
+//   std::cout << std::endl << "Image size: " << ++i << std::endl;
+
+//   std::cout << "FINISH." << std::endl;
+//   return 1;
+// }

@@ -12,6 +12,7 @@ class FisheyeUndistorter : public Fisheye {
   cv::Mat Undistort(const cv::Mat& fisheye_img) const;
 
   bool ExtractTimestamp();
+  bool ExtractTimestamp(std::vector<double>* const all_time_ptr);
 
  private:
   void Initization(const std::vector<float>& fisheye_distortion_table,

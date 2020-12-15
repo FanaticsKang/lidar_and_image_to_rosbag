@@ -42,8 +42,8 @@ target_link_libraries(read_rosbag_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(read_rosbag_odometry src/read_rosbag_odometry.cc)
 target_link_libraries(read_rosbag_odometry ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-add_executable(fisheye_fov_undistort src/fisheye_fov.cc)
-target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})
+# add_executable(fisheye_fov_undistort src/fisheye_fov.cc)
+# target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(read_wheel_pulse src/read_wheel_pulse.cc
                                 src/vehicle.cc)
@@ -51,3 +51,9 @@ add_executable(read_wheel_pulse src/read_wheel_pulse.cc
 target_link_libraries(read_wheel_pulse ${catkin_LIBRARIES}
                                          ${OpenCV_LIBS}
                                          glog)
+
+add_executable(write_image_odometry src/write_image_odometry.cc
+                                    src/fisheye_fov.cc)
+
+target_link_libraries(write_image_odometry ${catkin_LIBRARIES}
+                                           ${OpenCV_LIBS})
