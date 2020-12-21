@@ -57,3 +57,8 @@ add_executable(write_image_odometry src/write_image_odometry.cc
 
 target_link_libraries(write_image_odometry ${catkin_LIBRARIES}
                                            ${OpenCV_LIBS})
+
+add_executable(extract_KB8_fisheye src/extract_KB8_fisheye.cc)
+
+target_link_libraries(extract_KB8_fisheye  ${catkin_LIBRARIES}
+                                           ${OpenCV_LIBS})

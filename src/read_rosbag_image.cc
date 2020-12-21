@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   rosbag::Bag bag;
   bag.open(argv[1], rosbag::bagmode::Read);
   // topic name
-  std::string topics = "/rear_camera/image_correct";
+  std::string topics = "/camera/image_raw";
 
   rosbag::View view(bag, rosbag::TopicQuery(topics));
   for (auto iter = view.begin(); iter != view.end(); ++iter) {

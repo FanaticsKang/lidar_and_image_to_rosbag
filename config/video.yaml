@@ -24,13 +24,18 @@ Output.path:  "/home/kang/Dataset/1126/capture/"
 Fisheye.pixel_size: 0.003  # unit: mm
 Fisheye.distortion_file:  "/home/kang/Dataset/1126/distort_table.txt"
 
-Fisheye.fx:               302.0
-Fisheye.fy:               302.0
-Fisheye.cx:               640
-Fisheye.cy:               360
+Fisheye.fx: 3.3194312219513085e+02
+Fisheye.fy: 3.3247184714548160e+02
+Fisheye.cx: 6.3544175190834528e+02
+Fisheye.cy: 3.5407725558319731e+02
 Fisheye.width:            1280
 Fisheye.height:           720
 
+
+Fisheye.k1: 6.6089562556246650e-02
+Fisheye.k2: 2.6735660842530651e-02
+Fisheye.k3: -1.3559849664351880e-02
+Fisheye.k4: 1.5734344135267359e-03
 #--------------------------------------------------------------------------------------------
 # Pinhole camera parameters
 #--------------------------------------------------------------------------------------------
