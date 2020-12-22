@@ -5,8 +5,14 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <cv_bridge/cv_bridge.h>
+#include <ros/ros.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
+#include <sensor_msgs/Image.h>
+
 int main(int argc, char **argv) {
-  if (argc < 2) {
+  if (argc < 3) {
     std::cerr << "Load video path " << std::endl;
     return -1;
   }
@@ -69,31 +75,19 @@ int main(int argc, char **argv) {
       fisheye_intrinsic_matrix, distort_coeff_matrix, cv::Matx33d::eye(),
       pinhole_intrinsic_matrix, img_size, CV_16SC2, map_x, map_y);
 
-  // step3.remap图像去畸变
-  cv::Mat cam_im = cv::imread(
-      "/home/kang/Dataset/with_calib/slam_video/output/front/bgr/001000.jpg");
+  rosbag::Bag bag;
+  bag.open(argv[2], rosbag::bagmode::Read);
+  std::string topics = "/camera/image_raw";
+  rosbag::View view(bag, rosbag::TopicQuery(topics));
+  for (auto iter = view.begin(); iter != view.end(); ++iter) {
+    sensor_msgs::ImageConstPtr msg = iter->instantiate<sensor_msgs::Image>();
 
-  std::cout << "Original Image Size: " << cam_im.size() << std::endl;
+    cv_bridge::CvImageConstPtr ros_image = cv_bridge::toCvShare(msg);
+    cv::Mat img = ros_image->image;
+    cv::Mat undistort_img;
+    cv::remap(img, undistort_img, map_x, map_y, cv::INTER_LINEAR);
 
-  cv::Mat correct_image;
-  cv::remap(cam_im, correct_image, map_x, map_y, cv::INTER_LINEAR);
-
-  std::cout << "correct_image Image size: " << correct_image.size()
-            << std::endl;
-  // step5.比较一下这两个图像是否一直
-  // cv::Mat substrct_im;
-  // cv::subtract(undistort_im, correct_image, substrct_im);
-  cv::imshow("Original", cam_im);
-  cv::imshow("Correct", correct_image);
-
-  cv::waitKey(0);
-
-  // step6.undistortPoints图像点去畸变
-  std::vector<cv::Point2f> src_pts{cv::Point2f(500, 500)};
-  std::vector<cv::Point2f> dst_pts;
-  cv::fisheye::undistortPoints(src_pts, dst_pts, fisheye_intrinsic_matrix,
-                               distort_coeff_matrix, cv::noArray(),
-                               pinhole_intrinsic_matrix);
-
-  std::cout << "dst_pts= " << dst_pts[0] << std::endl;
+    cv::imshow("undistort", undistort_img);
+    cv::waitKey(100);
+  }
 }
