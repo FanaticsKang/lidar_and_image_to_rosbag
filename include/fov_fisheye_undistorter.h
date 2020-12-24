@@ -1,17 +1,17 @@
 #pragma once
-
 #include <opencv2/core.hpp>
 #include <vector>
 #include "fisheye.h"
+#include "safe_queue.h"
 
-class FisheyeUndistorter : public Fisheye {
+class FovFisheyeUndistorter : public Fisheye {
  public:
-  explicit FisheyeUndistorter(const std::string& setting_file);
+  explicit FovFisheyeUndistorter(const std::string& setting_file);
 
-  // undistort a BGR or gray image
-  cv::Mat Undistort(const cv::Mat& fisheye_img) const;
+  virtual void Undistort(const std::string& video_name) override;
 
   bool ExtractTimestamp();
+  bool ExtractTimestamp(std::vector<double>* const all_time_ptr);
 
  private:
   void Initization(const std::vector<float>& fisheye_distortion_table,
@@ -21,12 +21,16 @@ class FisheyeUndistorter : public Fisheye {
                    const float pinhole_height);
   float RadianToDegree(const float r) { return (r / M_PI) * 180.f; }
 
-public:
-  std::string input_path_;
-  std::string timestamp_path_;
-  std::string output_path_;
+ public:
+  ConcurrentSafeQueue<cv::Mat> queue_img_;
+  std::atomic_bool is_finished_;
+  std::string input_folder_;
+  std::string output_folder_;
 
  private:
   cv::Mat map_x_;
   cv::Mat map_y_;
 };
+
+typedef std::shared_ptr<FovFisheyeUndistorter> fov_ptr;
+typedef std::shared_ptr<std::thread> thread_ptr;

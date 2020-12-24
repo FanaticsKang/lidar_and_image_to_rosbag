@@ -4,6 +4,5 @@
 
 class Fisheye {
  public:
-  virtual cv::Mat Undistort(const cv::Mat& fisheye_img) const = 0;
-
+  virtual void Undistort(const std::string& video_name) = 0;
 };

@@ -6,8 +6,21 @@
 
 # Input path and file names
 # Note: If you comment the lines, the corresponding images will not be output
-Input.path:       "/home/kang/data/1126/capture/front.avi"
-Input.timestamp: "/home/kang/data/1126/capture/video_frame_info"
+Input.folder: "/Path/To/Input/Folder"
+
+Input.video_1: "front.avi"
+Input.video_2: "rear.avi"
+Input.video_3: "left.avi"
+Input.video_4: "right.avi"
+Input.video_5: "frontcopy.avi"
+Input.video_6: "leftcopy.avi"
+Input.video_7: "rearcopy.avi"
+Input.video_8: "rightcopy.avi"
+
+Input.video_num: 6
+
+Input.timestamps: "video_frame_info"
+
 
 #--------------------------------------------------------------------------------------------
 # Output parameters
@@ -15,22 +28,27 @@ Input.timestamp: "/home/kang/data/1126/capture/video_frame_info"
 
 # Output directories
 # Note: If you comment the lines, the corresponding images will not be output
-Output.path:  "/home/kang/data/1126/capture/"
+Output.folder:  "/Path/To/Output/Folder"
 
 #--------------------------------------------------------------------------------------------
 # Fisheye camera parameters
 #--------------------------------------------------------------------------------------------
 
 Fisheye.pixel_size: 0.003  # unit: mm
-Fisheye.distortion_file:  "/home/kang/data/1126/distort_table.txt"
+Fisheye.distortion_file:  "/Path/To/distort_table.txt"
 
-Fisheye.fx:               302.0
-Fisheye.fy:               302.0
-Fisheye.cx:               640
-Fisheye.cy:               360
+Fisheye.fx: 3.3194312219513085e+02
+Fisheye.fy: 3.3247184714548160e+02
+Fisheye.cx: 6.3544175190834528e+02
+Fisheye.cy: 3.5407725558319731e+02
 Fisheye.width:            1280
 Fisheye.height:           720
 
+
+Fisheye.k1: 6.6089562556246650e-02
+Fisheye.k2: 2.6735660842530651e-02
+Fisheye.k3: -1.3559849664351880e-02
+Fisheye.k4: 1.5734344135267359e-03
 #--------------------------------------------------------------------------------------------
 # Pinhole camera parameters
 #--------------------------------------------------------------------------------------------
