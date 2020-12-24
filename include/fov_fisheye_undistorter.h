@@ -32,5 +32,4 @@ class FovFisheyeUndistorter : public Fisheye {
   cv::Mat map_y_;
 };
 
-typedef std::shared_ptr<FovFisheyeUndistorter> fov_ptr;
-typedef std::shared_ptr<std::thread> thread_ptr;
+typedef std::shared_ptr<FovFisheyeUndistorter> FovFisheyeUndistorterPtr;

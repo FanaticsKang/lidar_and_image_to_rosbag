@@ -54,13 +54,13 @@ bool ReadSettingFile(const std::string& settingfile,
 void MultiProcess(const std::string& settingfile,
                   const std::vector<std::string>& video_names) {
   //根据相机数建立线程得到线程容器
-  std::vector<fov_ptr> undistorter_vector;
-  std::vector<thread_ptr> thread_vector;
+  std::vector<FovFisheyeUndistorterPtr> undistorter_vector;
+  std::vector<std::shared_ptr<std::thread>> thread_vector;
   for (auto& tmp : video_names) {
     std::shared_ptr<FovFisheyeUndistorter> undistorter_ptr(
         new FovFisheyeUndistorter(settingfile));
     undistorter_vector.emplace_back(undistorter_ptr);
-    
+
     std::shared_ptr<std::thread> thread_ptr(new std::thread(
         &FovFisheyeUndistorter::Undistort, undistorter_ptr, tmp));
     thread_vector.emplace_back(thread_ptr);
