@@ -10,9 +10,6 @@ class FovFisheyeUndistorter : public Fisheye {
 
   virtual void Undistort(const std::string& video_name) override;
 
-  bool ExtractTimestamp();
-  bool ExtractTimestamp(std::vector<double>* const all_time_ptr);
-
  private:
   void Initization(const std::vector<float>& fisheye_distortion_table,
                    const float fisheye_pixel_size, const cv::Mat& K_fisheye,
