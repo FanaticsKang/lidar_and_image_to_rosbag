@@ -64,3 +64,6 @@ target_link_libraries(extract_KB8_fisheye  ${catkin_LIBRARIES}
                                            ${OpenCV_LIBS})
 add_executable(fisheye_fov_undistort src/undistort_process.cc  src/fov_fisheye_undistorter.cc)
 target_link_libraries(fisheye_fov_undistort ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(extract_hikivision src/extract_hikvision.cc)
+target_link_libraries(extract_hikivision  ${catkin_LIBRARIES})
